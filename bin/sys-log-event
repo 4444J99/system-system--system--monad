@@ -14,9 +14,15 @@ def generate_deterministic_uid(prefix: str, payload_str: str, length: int = 5) -
     return f"{prefix}_{h[:length]}"
 
 def append_to_ledger(event_record: dict):
-    os.makedirs(os.path.dirname(LEDGER_PATH), exist_ok=True)
-    with open(LEDGER_PATH, "a", encoding="utf-8") as f:
-        f.write(json.dumps(event_record) + "\n")
+    dirname = os.path.dirname(LEDGER_PATH)
+    try:
+        if dirname:
+            os.makedirs(dirname, exist_ok=True)
+        with open(LEDGER_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(event_record) + "\n")
+    except OSError as e:
+        print(f"Error writing to ledger path '{LEDGER_PATH}': {e}", file=sys.stderr)
+        sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(description="Log a system event to the immutable registry ledger.")
